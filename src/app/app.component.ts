@@ -6,5 +6,11 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'MusicOrganizerElectron';
+  electron = (<any>window).require('electron');
+  res: string;
+
+  async testFunc() {
+    this.res = await this.electron.ipcRenderer.sendSync('test', 'TESTING');
+    console.log(this.res);
+  }
 }
