@@ -1,7 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const sequelize = require('sequelize');
+const func = require('./functions');
 
 let mainWindow;
+
 const dbConnection = new sequelize.Sequelize({
 	dialect: 'sqlite',
 	storage: 'C://ProgramData/Music_Organizer/db.sqlite'
@@ -30,9 +32,19 @@ const Album = dbConnection.define('Album', {
 }, {});
 
 function createWindow() {
-	ipcMain.on('test', (event, arg) => {
+  ipcMain.on('check-config', (event, arg) => {
+    const config = func.checkConfig();
+    event.reply('config-reply', config);
+	})
+
+  ipcMain.on('create-config', (event, arg) => {
+    func.saveConfig(arg);
+    event.reply('config-reply', arg);
+	})
+
+  ipcMain.on('collection-query', (event, arg) => {
 		console.log(arg);
-		event.reply('test-reply', 'response from electron');
+    event.reply('collection-reply', 'Query received');
 	})
 
 	mainWindow = new BrowserWindow({
@@ -58,10 +70,12 @@ function createWindow() {
 
 // Create window on electron initialization
 app.on('ready', async () => {
-	ipcMain.on('test', (event, arg) => {
-		console.log(arg);
-		event.reply('test-reply', 'Replied!')
-	})
+	// ipcMain.on('collection-query', (event, arg) => {
+	// 	console.log('Query received');
+	// 	console.log(arg);
+  //   event.reply('Query received');
+	// })
+  
 	await Album.sync();
 	console.log('Database Synced');
 	createWindow();

@@ -1,3 +1,5 @@
 <app-header></app-header>
-<button (click)="testFunc()">Click Me</button>
-<p>{{res}}</p>
+<div style="padding: 20px;">
+    <app-config *ngIf="!electronService.config"></app-config>
+</div>
+
