@@ -19,7 +19,7 @@
     "target": "ES2022",
     "module": "commonjs",
     "useDefineForClassFields": false,
-    "lib": ["es5", "es6", "dom"],
+    "lib": ["es5", "es6", "dom", "es2016"],
     "strictPropertyInitialization": false
   },
   "include": ["./src/**/*"],

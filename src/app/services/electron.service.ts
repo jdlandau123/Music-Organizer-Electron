@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { NgZone } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 
 export interface IConfig {
   collectionPath: string;

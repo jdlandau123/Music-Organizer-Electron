@@ -1,0 +1,9 @@
+.tableContainer {
+    width: 60vw;
+    height: calc(100vh - 90px);
+    overflow: auto;
+}
+
+.mat-column-fileFormat {
+    min-width: 125px;
+}

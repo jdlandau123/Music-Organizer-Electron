@@ -32,19 +32,34 @@ const Album = dbConnection.define('Album', {
 }, {});
 
 function createWindow() {
-  ipcMain.on('check-config', (event, arg) => {
-    const config = func.checkConfig();
-    event.reply('config-reply', config);
+	ipcMain.on('check-config', (event, arg) => {
+		const config = func.checkConfig();
+		event.reply('config-reply', config);
 	})
 
-  ipcMain.on('create-config', (event, arg) => {
-    func.saveConfig(arg);
-    event.reply('config-reply', arg);
+	ipcMain.on('create-config', (event, arg) => {
+		func.saveConfig(arg);
+		event.reply('config-reply', arg);
 	})
 
-  ipcMain.on('collection-query', (event, arg) => {
-		console.log(arg);
-    event.reply('collection-reply', 'Query received');
+	ipcMain.on('collection-query', async (event, arg) => {
+		const res = await func.queryCollection(Album, arg);
+		event.reply('collection-reply', res);
+	})
+
+	ipcMain.on('sync-collection', (event, arg) => {
+		const res = func.syncMusicCollection(Album);
+		event.reply('sync-collection-reply', res);
+	})
+
+	ipcMain.on('sync-device', (event, arg) => {
+		const res = func.syncDevice(Album, arg);
+		event.reply('sync-device-reply', res);
+	})
+
+	ipcMain.on('scan-device', (event, arg) => {
+		const res = func.scanDevice(Album);
+		event.reply('scan-device-reply', res);
 	})
 
 	mainWindow = new BrowserWindow({

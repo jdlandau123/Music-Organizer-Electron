@@ -1,5 +1,9 @@
 <app-header></app-header>
 <div style="padding: 20px;">
     <app-config *ngIf="!electronService.config"></app-config>
+    <div *ngIf="electronService.config" class="mainWrapper">
+        <app-collection></app-collection>
+        <app-control-panel></app-control-panel>
+    </div>
 </div>
 
