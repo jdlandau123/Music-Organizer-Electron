@@ -1,8 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const sequelize = require('sequelize');
 const func = require('./functions');
+const NodeCache = require( "node-cache" );
 
 let mainWindow;
+let cache;
 
 const dbConnection = new sequelize.Sequelize({
 	dialect: 'sqlite',
@@ -32,6 +34,8 @@ const Album = dbConnection.define('Album', {
 }, {});
 
 function createWindow() {
+	cache = new NodeCache({stdTTL: 600, checkperiod: 120});
+
 	ipcMain.on('check-config', (event, arg) => {
 		const config = func.checkConfig();
 		event.reply('config-reply', config);
@@ -48,18 +52,22 @@ function createWindow() {
 	})
 
 	ipcMain.on('sync-collection', (event, arg) => {
-		const res = func.syncMusicCollection(Album);
+		const res = func.syncMusicCollection(Album, cache);
 		event.reply('sync-collection-reply', res);
 	})
 
 	ipcMain.on('sync-device', (event, arg) => {
-		const res = func.syncDevice(Album, arg);
+		const res = func.syncDevice(Album, arg, cache);
 		event.reply('sync-device-reply', res);
 	})
 
 	ipcMain.on('scan-device', (event, arg) => {
 		const res = func.scanDevice(Album);
 		event.reply('scan-device-reply', res);
+	})
+
+	ipcMain.on('check-cache', (event, arg) => {
+		event.reply('cache-reply', cache.get(arg));
 	})
 
 	mainWindow = new BrowserWindow({
@@ -84,13 +92,7 @@ function createWindow() {
 }
 
 // Create window on electron initialization
-app.on('ready', async () => {
-	// ipcMain.on('collection-query', (event, arg) => {
-	// 	console.log('Query received');
-	// 	console.log(arg);
-  //   event.reply('Query received');
-	// })
-  
+app.on('ready', async () => {  
 	await Album.sync();
 	console.log('Database Synced');
 	createWindow();
@@ -101,6 +103,8 @@ app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
+	cache.flushAll();
+	cache.close();
 })
 
 app.on('activate', () => {

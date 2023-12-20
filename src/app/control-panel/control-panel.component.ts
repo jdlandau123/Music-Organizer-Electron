@@ -2,11 +2,14 @@ import { Component, NgZone, OnInit } from '@angular/core';
 import { CollectionService } from '../services/collection.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormGroup, FormControl } from '@angular/forms';
-import { tap, debounceTime } from 'rxjs';
+import { tap, debounceTime, Subscription } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ProgressDialogComponent } from '../progress-dialog/progress-dialog.component';
 
 interface ISyncResult {
   status: string;
   message: string;
+  cacheKey: string;
 }
 
 @Component({
@@ -20,13 +23,18 @@ export class ControlPanelComponent implements OnInit {
     search: new FormControl<string>('')
   })
 
-  constructor(private _zone: NgZone, private _collectionService: CollectionService, private _snackBar: MatSnackBar) {
+  constructor(private _zone: NgZone, private _collectionService: CollectionService,
+              private _snackBar: MatSnackBar, public dialog: MatDialog) {
     this._collectionService.electron.ipcRenderer.on('sync-collection-reply', (event: any, arg: ISyncResult) => {
       this._zone.run(() => {
+        console.log(arg)
         if (arg.status === 'error') {
           this._snackBar.open(arg.message);
         }
         this.isLoading = false;
+        if (arg.cacheKey) {
+          this.openProgressDialog(arg.cacheKey, 'Sync Music Collection');
+        }
         this._collectionService.queryCollection();
       })
     });
@@ -37,6 +45,9 @@ export class ControlPanelComponent implements OnInit {
           this._snackBar.open(arg.message);
         }
         this.isLoading = false;
+        if (arg.cacheKey) {
+          this.openProgressDialog(arg.cacheKey, 'Sync Device');
+        }
         this._collectionService.queryCollection();
       })
     });
@@ -73,4 +84,11 @@ export class ControlPanelComponent implements OnInit {
     this.isLoading = true;
     this._collectionService.electron.ipcRenderer.send('scan-device');
   }
+
+  openProgressDialog(cacheKey: string, action: string): void {
+    this.dialog.open(ProgressDialogComponent, {
+      data: {cacheKey, action},
+    });
+  }
+
 }

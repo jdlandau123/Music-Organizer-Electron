@@ -1,0 +1,7 @@
+.btnWrapper {
+    width: calc(40vw - 60px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}

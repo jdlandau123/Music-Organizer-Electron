@@ -32,7 +32,8 @@
             <td mat-cell *matCellDef="let element">{{element.fileFormat}}</td>
         </ng-container>
     
-        <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>
+        <tr mat-header-row *matHeaderRowDef="tableColumns, sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: tableColumns;" (click)="collectionService.selectedAlbum.next(row)"
+            [class.selectedAlbum]="row === (collectionService.selectedAlbum | async)"></tr>
     </table>
 </div>

@@ -2,23 +2,25 @@
     <mat-spinner style="margin: auto;"></mat-spinner>
 </div>
 <form [formGroup]="searchForm">
-    <mat-form-field>
+    <mat-form-field style="min-width: 100%;">
         <mat-label>Search</mat-label>
         <input matInput type="text" formControlName="search" />
     </mat-form-field>
 </form>
-<div style="display: flex; justify-content: space-between; width: calc(40vw - 60px); flex-wrap: wrap; gap: 20px;">
+<div class="btnWrapper">
     <button mat-raised-button color="accent" (click)="syncMusicCollection()"
             matTooltip="Update the app's database to match your music collection">
         Sync With Music Collection
     </button>
-    <button mat-raised-button color="primary" (click)="syncDevice()"
-            matTooltip="Update the music on your device to match your selection in the table">
-        Sync Device
-    </button>
-    <button mat-raised-button color="primary" (click)="scanDevice()"
-            matTooltip="Tell the database which albums are currently on your device">
-        Scan Device
-    </button>
+    <div style="margin-top: 20px;">
+        <button mat-raised-button color="primary" (click)="syncDevice()"
+                matTooltip="Update the music on your device to match your selection in the table">
+            Sync Device
+        </button>
+        <button mat-raised-button color="primary" (click)="scanDevice()" style="margin-left: 20px;"
+                matTooltip="Tell the database which albums are currently on your device">
+            Scan Device
+        </button>
+    </div>
 </div>
 

@@ -7,3 +7,11 @@
 .mat-column-fileFormat {
     min-width: 125px;
 }
+
+tr:hover {
+    cursor: pointer;
+}
+
+.selectedAlbum {
+    background-color: #C8E6C9;
+}

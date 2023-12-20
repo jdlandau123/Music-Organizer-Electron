@@ -15,7 +15,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { CollectionComponent } from './collection/collection.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { AlbumDetailsComponent } from './album-details/album-details.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
+import { ProgressDialogComponent } from './progress-dialog/progress-dialog.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 @NgModule({
   declarations: [
@@ -23,7 +28,9 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
     HeaderComponent,
     ConfigComponent,
     ControlPanelComponent,
-    CollectionComponent
+    CollectionComponent,
+    AlbumDetailsComponent,
+    ProgressDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -38,7 +45,10 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
     MatProgressSpinnerModule,
     MatTableModule,
     MatCheckboxModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatCardModule,
+    MatDialogModule,
+    MatProgressBarModule
   ],
   providers: [
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 2500} }

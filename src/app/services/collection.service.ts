@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+
 export interface IAlbum {
   id: number;
   artist: string;
@@ -8,6 +9,7 @@ export interface IAlbum {
   fileFormat: string;
   isOnDevice: boolean;
   tracklist?: any;
+  image?: string;
 }
 
 @Injectable({
@@ -17,6 +19,7 @@ export class CollectionService {
   electron = (<any>window).require('electron');
   collection: BehaviorSubject<IAlbum[]> = new BehaviorSubject<IAlbum[]>([]);
   albumIdsToSync: number[];
+  selectedAlbum: BehaviorSubject<IAlbum | null> = new BehaviorSubject<IAlbum | null>(null);
 
   constructor(private _zone: NgZone) {
     this.electron.ipcRenderer.on('collection-reply', (event: any, arg: IAlbum[]) => {

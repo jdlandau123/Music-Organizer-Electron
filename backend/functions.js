@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { Op } = require("sequelize");
+const { v4: uuidv4 } = require('uuid');
 
 const basepath = 'C://ProgramData/Music_Organizer';
 
@@ -34,17 +35,22 @@ async function queryCollection(albumModel, searchTerm) {
     }
 }
 
-function syncMusicCollection(albumModel) {
+function syncMusicCollection(albumModel, cache) {
     const config = JSON.parse(fs.readFileSync(`${basepath}/config.json`, 'utf8'));
     if (!fs.existsSync(config.collectionPath)) {
         return {status: 'error', message: 'Music Collection Not Found'}
     }
     let totalAlbums = 0;
     fs.readdirSync(config.collectionPath).forEach(artist => {
+        totalAlbums += fs.readdirSync(path.join(config.collectionPath, artist)).length;
+    })
+    const cacheKey = uuidv4(); // set up cache for progress tracking
+    cache.set(cacheKey, {total: totalAlbums, complete: 0});
+    fs.readdirSync(config.collectionPath).forEach(artist => {
         const artistPath = path.join(config.collectionPath, artist);
         fs.readdirSync(artistPath).forEach(async album => {
             const albumPath = path.join(artistPath, album);
-            totalAlbums += 1;
+            // totalAlbums += 1;
             let tracks = {};
             let fileFormat = null;
             let trackNum = 1;
@@ -67,15 +73,21 @@ function syncMusicCollection(albumModel) {
                 } else {
                     await albumModel.create({artist, album, fileFormat, isOnDevice: false, tracklist: tracks});
                 }
+                let cacheVal = cache.get(cacheKey);
+                cacheVal.complete += 1;
+                cache.set(cacheKey, cacheVal);
             } catch(e) {
                 console.log('ERROR: ' + e);
             }
         })
     })
-    return {status: 'success', message: 'Database Synced'}
+    let cacheVal = cache.get(cacheKey); // make sure it always completes
+    cacheVal.complete = cacheVal.total;
+    cache.set(cacheKey, cacheVal);   
+    return {status: 'success', message: 'Database Synced', cacheKey}
 }
 
-async function syncDevice(albumModel, albumIdsToSync) {
+async function syncDevice(albumModel, albumIdsToSync, cache) {
     const config = JSON.parse(fs.readFileSync(`${basepath}/config.json`, 'utf8'));
     if (!fs.existsSync(config.devicePath)) {
         return {status: 'error', message: 'Device Not Found'}
@@ -83,6 +95,8 @@ async function syncDevice(albumModel, albumIdsToSync) {
     if (!fs.existsSync(config.collectionPath)) {
         return {status: 'error', message: 'Music Collection Not Found'}
     }
+    const cacheKey = uuidv4(); // set up cache for progress tracking
+    cache.set(cacheKey, {total: albumIdsToSync.length, complete: 0});
     try {
         const albumsToAdd = await albumModel.findAll({
             where: {
@@ -108,6 +122,9 @@ async function syncDevice(albumModel, albumIdsToSync) {
             });
             album.isOnDevice = true;
             await album.save({fields: ['isOnDevice']});
+            let cacheVal = cache.get(cacheKey);
+            cacheVal.complete += 1;
+            cache.set(cacheKey, cacheVal);
         })
         albumsToRemove.forEach(async album => {
             fs.rmSync(`${config.devicePath}/${album.artist}/${album.album}`, { recursive: true });
@@ -123,6 +140,9 @@ async function syncDevice(albumModel, albumIdsToSync) {
             fs.rmSync(artistPath, { recursive: true }); // clean up empty artist folders
         }
     })
+    let cacheVal = cache.get(cacheKey); // make sure it always completes
+    cacheVal.complete = cacheVal.total;
+    cache.set(cacheKey, cacheVal);   
     return {status: 'success', message: 'Device Synced'}
 }
 

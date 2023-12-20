@@ -3,7 +3,9 @@
     <app-config *ngIf="!electronService.config"></app-config>
     <div *ngIf="electronService.config" class="mainWrapper">
         <app-collection></app-collection>
-        <app-control-panel></app-control-panel>
+        <div style="height: calc(100vh - 90px); overflow-y: auto; overflow-x: hidden;">
+            <app-control-panel></app-control-panel>
+            <app-album-details></app-album-details>
+        </div>
     </div>
 </div>
-

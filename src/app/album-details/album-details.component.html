@@ -1,0 +1,11 @@
+<div style="margin-top: 20px;">
+    <p *ngIf="!(collectionService.selectedAlbum | async)" style="text-align: center;">
+        Select an album to view it's details
+    </p>
+    <mat-card *ngIf="(collectionService.selectedAlbum | async) as album" style="padding: 20px;">
+        <img *ngIf="artworkUrl" src="{{artworkUrl}}" />
+        <p>Artist: {{album?.artist}}</p>
+        <p>Album: {{album?.album}}</p>
+        <p *ngFor="let song of songsDisplay">{{song.trackNum}} - {{song.trackTitle}}</p>
+    </mat-card>
+</div>
