@@ -1,7 +1,7 @@
 {
   "name": "music-organizer-electron",
   "version": "0.0.0",
-  "main": "backend/main.js",
+  "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,7 +9,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "electron": "electron .",
-    "electron-build": "ng build --prod && electron ."
+    "electron-build": "ng build --configuration production && electron ."
   },
   "private": true,
   "dependencies": {

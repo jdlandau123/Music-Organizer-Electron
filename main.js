@@ -82,9 +82,10 @@ function createWindow() {
 	})
 
 	//   mainWindow.loadURL(`file://${__dirname}/dist/music-organizer-electron/index.html`)
-	mainWindow.loadURL('http://localhost:4200')
+	  mainWindow.loadURL(`${__dirname}/dist/music-organizer-electron/index.html`)
+	// mainWindow.loadURL('http://localhost:4200')
 
-	mainWindow.webContents.openDevTools()
+	// mainWindow.webContents.openDevTools()
 
 	mainWindow.on('closed', () => {
 		mainWindow = null
