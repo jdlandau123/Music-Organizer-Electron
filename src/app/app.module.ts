@@ -21,6 +21,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ProgressDialogComponent } from './progress-dialog/progress-dialog.component';
 import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { MatSortModule } from '@angular/material/sort';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
     MatTooltipModule,
     MatCardModule,
     MatDialogModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatSortModule
   ],
   providers: [
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 2500} }

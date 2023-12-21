@@ -32,4 +32,12 @@ export class CollectionComponent implements OnInit {
     }
   }
 
+  sortTable(event: any) {
+    this.collectionService.searchObject.order = [
+      event.active,
+      event.direction === '' ? 'ASC' : event.direction.toUpperCase()
+    ];
+    this.collectionService.queryCollection();
+  }
+
 }

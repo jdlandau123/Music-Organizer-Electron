@@ -3,7 +3,7 @@
     <mat-spinner></mat-spinner>
 </div>
 <div class="tableContainer" *ngIf="collectionService.collection.value.length > 0">
-    <table mat-table [dataSource]="collectionService.collection">
+    <table mat-table [dataSource]="collectionService.collection" matSort (matSortChange)="sortTable($event)">
         <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef>
                 <mat-checkbox color="primary" (change)="selectAllAlbums($event)"></mat-checkbox>
@@ -18,17 +18,17 @@
         </ng-container>
 
         <ng-container matColumnDef="artist">
-            <th mat-header-cell *matHeaderCellDef>Artist</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Artist</th>
             <td mat-cell *matCellDef="let element">{{element.artist}}</td>
         </ng-container>
 
         <ng-container matColumnDef="album">
-            <th mat-header-cell *matHeaderCellDef>Album</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Album</th>
             <td mat-cell *matCellDef="let element">{{element.album}}</td>
         </ng-container>
 
         <ng-container matColumnDef="fileFormat">
-            <th mat-header-cell *matHeaderCellDef>File Format</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>File Format</th>
             <td mat-cell *matCellDef="let element">{{element.fileFormat}}</td>
         </ng-container>
     

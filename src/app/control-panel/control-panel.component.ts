@@ -2,7 +2,7 @@ import { Component, NgZone, OnInit } from '@angular/core';
 import { CollectionService } from '../services/collection.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormGroup, FormControl } from '@angular/forms';
-import { tap, debounceTime, Subscription } from 'rxjs';
+import { tap, debounceTime } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ProgressDialogComponent } from '../progress-dialog/progress-dialog.component';
 
@@ -27,7 +27,6 @@ export class ControlPanelComponent implements OnInit {
               private _snackBar: MatSnackBar, public dialog: MatDialog) {
     this._collectionService.electron.ipcRenderer.on('sync-collection-reply', (event: any, arg: ISyncResult) => {
       this._zone.run(() => {
-        console.log(arg)
         if (arg.status === 'error') {
           this._snackBar.open(arg.message);
         }
@@ -66,7 +65,8 @@ export class ControlPanelComponent implements OnInit {
   ngOnInit(): void {
     this.searchForm.controls.search.valueChanges.pipe(
       debounceTime(1000),
-      tap((v: any) => this._collectionService.queryCollection(v))
+      tap((v: any) => this._collectionService.searchObject.search = v),
+      tap(() => this._collectionService.queryCollection())
     ).subscribe();
   }
 
