@@ -1,6 +1,3 @@
-<div *ngIf="isLoading" style="margin-bottom: 20px;">
-    <mat-spinner style="margin: auto;"></mat-spinner>
-</div>
 <form [formGroup]="searchForm">
     <mat-form-field style="min-width: 100%;">
         <mat-label>Search</mat-label>
@@ -22,5 +19,8 @@
             Scan Device
         </button>
     </div>
+</div>
+<div *ngIf="isLoading" style="margin-bottom: 20px; margin-top: 20px;">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 </div>
 

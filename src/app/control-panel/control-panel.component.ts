@@ -3,8 +3,6 @@ import { CollectionService } from '../services/collection.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormGroup, FormControl } from '@angular/forms';
 import { tap, debounceTime } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
-import { ProgressDialogComponent } from '../progress-dialog/progress-dialog.component';
 
 interface ISyncResult {
   status: string;
@@ -24,41 +22,17 @@ export class ControlPanelComponent implements OnInit {
   })
 
   constructor(private _zone: NgZone, private _collectionService: CollectionService,
-              private _snackBar: MatSnackBar, public dialog: MatDialog) {
+              private _snackBar: MatSnackBar) {
     this._collectionService.electron.ipcRenderer.on('sync-collection-reply', (event: any, arg: ISyncResult) => {
-      this._zone.run(() => {
-        if (arg.status === 'error') {
-          this._snackBar.open(arg.message);
-        }
-        this.isLoading = false;
-        if (arg.cacheKey) {
-          this.openProgressDialog(arg.cacheKey, 'Sync Music Collection');
-        }
-        this._collectionService.queryCollection();
-      })
+      this.finishOperation(arg);
     });
 
     this._collectionService.electron.ipcRenderer.on('sync-device-reply', (event: any, arg: ISyncResult) => {
-      this._zone.run(() => {
-        if (arg.status === 'error') {
-          this._snackBar.open(arg.message);
-        }
-        this.isLoading = false;
-        if (arg.cacheKey) {
-          this.openProgressDialog(arg.cacheKey, 'Sync Device');
-        }
-        this._collectionService.queryCollection();
-      })
+      this.finishOperation(arg);
     });
 
     this._collectionService.electron.ipcRenderer.on('scan-device-reply', (event: any, arg: ISyncResult) => {
-      this._zone.run(() => {
-        if (arg.status === 'error') {
-          this._snackBar.open(arg.message);
-        }
-        this.isLoading = false;
-        this._collectionService.queryCollection();
-      })
+      this.finishOperation(arg);
     });
   }
 
@@ -85,10 +59,14 @@ export class ControlPanelComponent implements OnInit {
     this._collectionService.electron.ipcRenderer.send('scan-device');
   }
 
-  openProgressDialog(cacheKey: string, action: string): void {
-    this.dialog.open(ProgressDialogComponent, {
-      data: {cacheKey, action},
-    });
+  finishOperation(result: ISyncResult) {
+    this._zone.run(() => {
+      if (result.status === 'error') {
+        this._snackBar.open(result.message);
+      }
+      this.isLoading = false;
+      this._collectionService.queryCollection();
+    })
   }
 
 }

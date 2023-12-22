@@ -18,8 +18,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AlbumDetailsComponent } from './album-details/album-details.component';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialogModule } from '@angular/material/dialog';
-import { ProgressDialogComponent } from './progress-dialog/progress-dialog.component';
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatSortModule } from '@angular/material/sort';
 
@@ -31,7 +29,6 @@ import { MatSortModule } from '@angular/material/sort';
     ControlPanelComponent,
     CollectionComponent,
     AlbumDetailsComponent,
-    ProgressDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -48,7 +45,6 @@ import { MatSortModule } from '@angular/material/sort';
     MatCheckboxModule,
     MatTooltipModule,
     MatCardModule,
-    MatDialogModule,
     MatProgressBarModule,
     MatSortModule
   ],

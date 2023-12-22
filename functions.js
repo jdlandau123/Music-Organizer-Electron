@@ -1,8 +1,6 @@
 const fs = require('fs');
-const fsPromises = require('fs/promises');
 const path = require('path');
 const { Op } = require("sequelize");
-const { v4: uuidv4 } = require('uuid');
 
 const basepath = 'C://ProgramData/Music_Organizer';
 
@@ -36,22 +34,17 @@ async function queryCollection(albumModel, searchObj) {
     }
 }
 
-function syncMusicCollection(albumModel, cache) {
+function syncMusicCollection(albumModel) {
     const config = JSON.parse(fs.readFileSync(`${basepath}/config.json`, 'utf8'));
     if (!fs.existsSync(config.collectionPath)) {
         return {status: 'error', message: 'Music Collection Not Found'}
     }
     let totalAlbums = 0;
     fs.readdirSync(config.collectionPath).forEach(artist => {
-        totalAlbums += fs.readdirSync(path.join(config.collectionPath, artist)).length;
-    })
-    const cacheKey = uuidv4(); // set up cache for progress tracking
-    cache.set(cacheKey, {total: totalAlbums, complete: 0});
-    fs.readdirSync(config.collectionPath).forEach(artist => {
         const artistPath = path.join(config.collectionPath, artist);
         fs.readdirSync(artistPath).forEach(async album => {
             const albumPath = path.join(artistPath, album);
-            // totalAlbums += 1;
+            totalAlbums++;
             let tracks = {};
             let fileFormat = null;
             let trackNum = 1;
@@ -71,76 +64,16 @@ function syncMusicCollection(albumModel, cache) {
                 } else {
                     await albumModel.create({artist, album, fileFormat, isOnDevice: false, tracklist: tracks});
                 }
-                let cacheVal = cache.get(cacheKey);
-                cacheVal.complete += 1;
-                cache.set(cacheKey, cacheVal);
             } catch(e) {
                 console.log('ERROR: ' + e);
+                return {status: 'error', message: 'Error syncing with music collection'};
             }
         })
     })
-    let cacheVal = cache.get(cacheKey); // make sure it always completes
-    cacheVal.complete = cacheVal.total;
-    cache.set(cacheKey, cacheVal);   
-    return {status: 'success', message: 'Database Synced', cacheKey}
+    return {status: 'success', message: 'Database Synced'}
 }
 
-// function syncMusicCollection(albumModel, cache) {
-//     const config = JSON.parse(fs.readFileSync(`${basepath}/config.json`, 'utf8'));
-//     if (!fs.existsSync(config.collectionPath)) {
-//         return {status: 'error', message: 'Music Collection Not Found'};
-//     }
-//     let totalAlbums = 0;
-//     fs.readdirSync(config.collectionPath).forEach(artist => {
-//         totalAlbums += fs.readdirSync(path.join(config.collectionPath, artist)).length;
-//     })
-//     const cacheKey = uuidv4(); // set up cache for progress tracking
-//     cache.set(cacheKey, {total: totalAlbums, complete: 0});
-//     try {
-//         fsPromises.readdir(config.collectionPath).then(artists => {
-//             for (let artist of artists) {
-//                 const artistPath = path.join(config.collectionPath, artist);
-//                 fsPromises.readdir(artistPath).then(albums => {
-//                     for (let album of albums) {
-//                         const albumPath = path.join(artistPath, album);
-//                         let tracks = {};
-//                         let fileFormat = null;
-//                         let trackNum = 1;
-//                         fsPromises.readdir(albumPath).then(songs => {
-//                             for (let song of songs) {
-//                                 if (!fileFormat) {
-//                                     fileFormat = path.extname(path.join(albumPath, song)).substring(1).toUpperCase();
-//                                 }
-//                                 tracks[trackNum] = song;
-//                                 trackNum++;
-//                             }
-//                             albumModel.findOne({
-//                                 where: {album, artist}
-//                             }).then(existingAlbum => {
-//                                 if (existingAlbum?.id) {
-//                                     existingAlbum.fileFormat = fileFormat;
-//                                     existingAlbum.tracklist = tracks;
-//                                     existingAlbum.save();
-//                                 } else {
-//                                     albumModel.create({artist, album, fileFormat, isOnDevice: false, tracklist: tracks});
-//                                 }
-//                                 let cacheVal = cache.get(cacheKey);
-//                                 cacheVal.complete += 1;
-//                                 cache.set(cacheKey, cacheVal);
-//                             })
-//                         })
-//                     }
-//                 })
-//             }
-//         }) 
-//     } catch (err) {
-//         console.log(err);
-//         return {status: 'error', message: 'Error Parsing Music Collection', cacheKey};
-//     }
-//     return {status: 'success', message: 'Database Synced', cacheKey}
-// }
-
-async function syncDevice(albumModel, albumIdsToSync, cache) {
+async function syncDevice(albumModel, albumIdsToSync) {
     const config = JSON.parse(fs.readFileSync(`${basepath}/config.json`, 'utf8'));
     if (!fs.existsSync(config.devicePath)) {
         return {status: 'error', message: 'Device Not Found'}
@@ -148,8 +81,6 @@ async function syncDevice(albumModel, albumIdsToSync, cache) {
     if (!fs.existsSync(config.collectionPath)) {
         return {status: 'error', message: 'Music Collection Not Found'}
     }
-    const cacheKey = uuidv4(); // set up cache for progress tracking
-    cache.set(cacheKey, {total: albumIdsToSync.length, complete: 0});
     try {
         const albumsToAdd = await albumModel.findAll({
             where: {
@@ -175,9 +106,6 @@ async function syncDevice(albumModel, albumIdsToSync, cache) {
             });
             album.isOnDevice = true;
             await album.save({fields: ['isOnDevice']});
-            let cacheVal = cache.get(cacheKey);
-            cacheVal.complete += 1;
-            cache.set(cacheKey, cacheVal);
         })
         albumsToRemove.forEach(async album => {
             fs.rmSync(`${config.devicePath}/${album.artist}/${album.album}`, { recursive: true });
@@ -186,6 +114,7 @@ async function syncDevice(albumModel, albumIdsToSync, cache) {
         })
     } catch(e) {
         console.log('ERROR: ' + e);
+        return {status: 'error', message: 'Error syncing device'};
     }
     fs.readdirSync(config.devicePath).forEach(artist => {
         const artistPath = path.join(config.devicePath, artist);
@@ -196,62 +125,6 @@ async function syncDevice(albumModel, albumIdsToSync, cache) {
     return {status: 'success', message: 'Device Synced'}
 }
 
-// async function syncDevice(albumModel, albumIdsToSync, cache) {
-//     const config = JSON.parse(fs.readFileSync(`${basepath}/config.json`, 'utf8'));
-//     if (!fs.existsSync(config.devicePath)) {
-//         return {status: 'error', message: 'Device Not Found'};
-//     }
-//     if (!fs.existsSync(config.collectionPath)) {
-//         return {status: 'error', message: 'Music Collection Not Found'};
-//     }
-//     const cacheKey = uuidv4(); // set up cache for progress tracking
-//     cache.set(cacheKey, {total: albumIdsToSync.length, complete: 0});
-//     try {
-//         const albumsToAdd = await albumModel.findAll({
-//             where: {
-//                 [Op.and]: [ // add albums that are not already on the device and in the array
-//                     {id: {[Op.in]: albumIdsToSync}},
-//                     {isOnDevice: false}
-//                 ]
-//             }
-//         })
-//         const albumsToRemove = await albumModel.findAll({
-//             where: {
-//                 [Op.and]: [ // remove albums that were not in the array and are on the device
-//                     {id: {[Op.notIn]: albumIdsToSync}},
-//                     {isOnDevice: true}
-//                 ]
-//             }
-//         })
-//         albumsToAdd.forEach(album => {
-//             const albumDir = `${config.collectionPath}/${album.artist}/${album.album}`;
-//             const destination = `${config.devicePath}/${album.artist}/${album.album}`;
-//             fsPromises.cp(albumDir, destination, {recursive: true}).then(() => {
-//                 album.isOnDevice = true;
-//                 album.save({fields: ['isOnDevice']});
-//                 let cacheVal = cache.get(cacheKey);
-//                 cacheVal.complete += 1;
-//                 cache.set(cacheKey, cacheVal);
-//             })      
-//         })
-//         albumsToRemove.forEach(album => {
-//             fsPromises.rm(`${config.devicePath}/${album.artist}/${album.album}`, {recursive: true}).then(() => {
-//                 album.isOnDevice = false;
-//                 album.save({fields: ['isOnDevice']});
-//             });
-//         })
-//     } catch(err) {
-//         console.log(err);
-//         return {status: 'error', message: 'Error Syncing Device', cacheKey}
-//     }
-//     fs.readdirSync(config.devicePath).forEach(artist => {
-//         const artistPath = path.join(config.devicePath, artist);
-//         if (fs.lstatSync(artistPath).isDirectory() && fs.readdirSync(artistPath).length === 0) {
-//             fs.rmSync(artistPath, { recursive: true }); // clean up empty artist folders
-//         }
-//     })
-//     return {status: 'success', message: 'Device Synced'}
-// }
 
 function scanDevice(albumModel) {
     const config = JSON.parse(fs.readFileSync(`${basepath}/config.json`, 'utf8'));
