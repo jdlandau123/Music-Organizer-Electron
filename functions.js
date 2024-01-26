@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { Op } = require("sequelize");
 
-const basepath = 'C://ProgramData/Music_Organizer';
+const basepath = 'C://ProgramData/Music_Organizer'; // windows
+// const basepath = '/opt/Music_Organizer'; // linux
 
 function checkConfig() {
     if (fs.existsSync(`${basepath}/config.json`)) {
